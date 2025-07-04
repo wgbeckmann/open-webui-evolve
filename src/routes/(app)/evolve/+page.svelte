@@ -1,5 +1,9 @@
 <script lang="ts">
+  import { user } from '$lib/stores';
   let active = 'tab1';
+  $: username = $user?.name ?? '';
+  $: uid = $user?.id ?? '';
+  $: tab1Src = `/evolve/tab1.html?name=${encodeURIComponent(username)}&id=${encodeURIComponent(uid)}`;
 </script>
 
 <div class="container mx-auto px-3 py-4">
@@ -15,7 +19,7 @@
     </li>
   </ul>
   {#if active === 'tab1'}
-    <iframe src="/evolve/tab1.html" class="w-100 border-0" style="height:80vh"></iframe>
+    <iframe src={tab1Src} class="w-100 border-0" style="height:80vh"></iframe>
   {:else if active === 'tab2'}
     <iframe src="/evolve/tab2.html" class="w-100 border-0" style="height:80vh"></iframe>
   {:else}

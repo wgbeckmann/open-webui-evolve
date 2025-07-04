@@ -11,6 +11,7 @@
 </head>
 <body class="p-3">
     <h2><i class="fa fa-table"></i> Tab 1 Tabelle</h2>
+    <p id="userinfo" class="mt-2"></p>
     <table class="table table-bordered mt-3">
         <thead>
             <tr><th>#</th><th>Name</th><th>Wert</th></tr>
@@ -21,7 +22,15 @@
         </tbody>
     </table>
     <script>
-        $(function(){ console.log('Tab 1 ready'); });
+        $(function(){
+            const params = new URLSearchParams(window.location.search);
+            const name = params.get('name');
+            const id = params.get('id');
+            if (name || id) {
+                $('#userinfo').text('Benutzer: ' + (name || '-') + (id ? ' (' + id + ')' : ''));
+            }
+            console.log('Tab 1 ready');
+        });
     </script>
 </body>
 </html>
