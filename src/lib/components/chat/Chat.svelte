@@ -422,15 +422,20 @@
 			}
 		}
 
-		if (event.data.type === 'input:prompt:submit') {
-			console.debug(event.data.text);
+                if (event.data.type === 'input:prompt:submit') {
+                        console.debug(event.data.text);
 
-			if (event.data.text !== '') {
-				await tick();
-				submitPrompt(event.data.text);
-			}
-		}
-	};
+                        if (event.data.text !== '') {
+                                await tick();
+                                submitPrompt(event.data.text);
+                        }
+                }
+
+                if (event.data.type === 'systemprompt:set') {
+                        console.debug(event.data.text);
+                        settings.set({ ...$settings, system: event.data.text });
+                }
+        };
 
 	let pageSubscribe = null;
 	onMount(async () => {
