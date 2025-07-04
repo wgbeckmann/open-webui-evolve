@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { WEBUI_NAME, showSidebar } from '$lib/stores';
+  let activeTab = 'tab1';
   import MenuLines from '$lib/components/icons/MenuLines.svelte';
 
   const i18n = getContext('i18n');
@@ -26,11 +27,30 @@
         </button>
       </div>
       <div class="flex w-full">
-        <div class="text-center text-sm font-medium rounded-full bg-transparent py-1">{$i18n.t('Evolve')}</div>
+        <div class="flex gap-1 scrollbar-none overflow-x-auto w-fit text-center text-sm font-medium rounded-full bg-transparent pt-1">
+          <a
+            href="#"
+            on:click|preventDefault={() => (activeTab = 'tab1')}
+            class="min-w-fit rounded-full p-1.5 {activeTab === 'tab1' ? '' : 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
+            >{$i18n.t('Evolve')}</a
+          >
+          <a
+            href="#"
+            on:click|preventDefault={() => (activeTab = 'tab2')}
+            class="min-w-fit rounded-full p-1.5 {activeTab === 'tab2' ? '' : 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
+            >Tab 2</a
+          >
+          <a
+            href="#"
+            on:click|preventDefault={() => (activeTab = 'tab3')}
+            class="min-w-fit rounded-full p-1.5 {activeTab === 'tab3' ? '' : 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
+            >Tab 3</a
+          >
+        </div>
       </div>
     </div>
   </nav>
   <div class="flex-1 max-h-full overflow-y-auto">
-    <slot />
+    <slot {activeTab} />
   </div>
 </div>
