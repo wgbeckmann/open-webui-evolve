@@ -69,7 +69,7 @@
 	import { processWeb, processWebSearch, processYoutubeVideo } from '$lib/apis/retrieval';
 	import { createOpenAITextStream } from '$lib/apis/streaming';
 	import { queryMemory } from '$lib/apis/memories';
-	import { getAndUpdateUserLocation, getUserSettings } from '$lib/apis/users';
+import { getAndUpdateUserLocation, getUserSettings } from '$lib/apis/users';
 	import {
 		chatCompleted,
 		generateQueries,
@@ -78,7 +78,8 @@
 		stopTask,
 		getTaskIdsByChatId
 	} from '$lib/apis';
-	import { getTools } from '$lib/apis/tools';
+import { getTools } from '$lib/apis/tools';
+import { runChatMessageInterceptor } from '$lib/interceptors/chatMessageInterceptor';
 
 	import Banner from '../common/Banner.svelte';
 	import MessageInput from '$lib/components/chat/MessageInput.svelte';
@@ -1642,17 +1643,15 @@
 			}))
 			.filter((message) => message?.role === 'user' || message?.content?.trim());
 
-		const res = await generateOpenAIChatCompletion(
-			localStorage.token,
-			{
-				stream: stream,
-				model: model.id,
-				messages: messages,
-				params: {
-					...$settings?.params,
-					...params,
-					stop:
-						(params?.stop ?? $settings?.params?.stop ?? undefined)
+                let payload = {
+                                stream: stream,
+                                model: model.id,
+                                messages: messages,
+                                params: {
+                                        ...$settings?.params,
+                                        ...params,
+                                        stop:
+                                                (params?.stop ?? $settings?.params?.stop ?? undefined)
 							? (params?.stop.split(',').map((token) => token.trim()) ?? $settings.params.stop).map(
 									(str) => decodeURIComponent(JSON.parse('"' + str.replace(/\"/g, '\\"') + '"'))
 								)
@@ -1700,32 +1699,38 @@
 				chat_id: $chatId,
 				id: responseMessageId,
 
-				background_tasks: {
-					...(!$temporaryChatEnabled &&
-					(messages.length == 1 ||
-						(messages.length == 2 &&
-							messages.at(0)?.role === 'system' &&
-							messages.at(1)?.role === 'user')) &&
-					(selectedModels[0] === model.id || atSelectedModel !== undefined)
-						? {
-								title_generation: $settings?.title?.auto ?? true,
-								tags_generation: $settings?.autoTags ?? true
-							}
-						: {}),
-					follow_up_generation: $settings?.autoFollowUps ?? true
-				},
+                                background_tasks: {
+                                        ...(!$temporaryChatEnabled &&
+                                        (messages.length == 1 ||
+                                                (messages.length == 2 &&
+                                                        messages.at(0)?.role === 'system' &&
+                                                        messages.at(1)?.role === 'user')) &&
+                                        (selectedModels[0] === model.id || atSelectedModel !== undefined)
+                                                ? {
+                                                                title_generation: $settings?.title?.auto ?? true,
+                                                                tags_generation: $settings?.autoTags ?? true
+                                                        }
+                                                : {}),
+                                        follow_up_generation: $settings?.autoFollowUps ?? true
+                                },
 
-				...(stream && (model.info?.meta?.capabilities?.usage ?? false)
-					? {
-							stream_options: {
-								include_usage: true
-							}
-						}
-					: {})
-			},
-			`${WEBUI_BASE_URL}/api`
-		).catch(async (error) => {
-			toast.error(`${error}`);
+                                ...(stream && (model.info?.meta?.capabilities?.usage ?? false)
+                                        ? {
+                                                        stream_options: {
+                                                                include_usage: true
+                                                        }
+                                                }
+                                        : {})
+                        };
+
+                payload = await runChatMessageInterceptor($chatId, payload);
+
+                const res = await generateOpenAIChatCompletion(
+                        localStorage.token,
+                        payload,
+                        `${WEBUI_BASE_URL}/api`
+                ).catch(async (error) => {
+                        toast.error(`${error}`);
 
 			responseMessage.error = {
 				content: error

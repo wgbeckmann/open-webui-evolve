@@ -35,9 +35,11 @@
 	import { getSessionUser, userSignOut } from '$lib/apis/auths';
 
 	import '../tailwind.css';
-	import '../app.css';
+import '../app.css';
 
-	import 'tippy.js/dist/tippy.css';
+import 'tippy.js/dist/tippy.css';
+
+import { setupLogChatInterceptor } from '$lib/interceptors/logChatInterceptor';
 
 	import { WEBUI_BASE_URL, WEBUI_HOSTNAME } from '$lib/constants';
 	import i18n, { initI18n, getLanguages, changeLanguage } from '$lib/i18n';
@@ -57,7 +59,8 @@
 		}
 	});
 
-	setContext('i18n', i18n);
+       setContext('i18n', i18n);
+       setupLogChatInterceptor();
 
 	const bc = new BroadcastChannel('active-tab-channel');
 
